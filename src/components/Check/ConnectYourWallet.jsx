@@ -1,9 +1,9 @@
 import { useAccount } from "@metamask/sdk-react-ui";
 import { useEffect, useRef, useState } from "react";
-import handleSendEth from "../../scripts/txn";
 import App from "../Metamask";
 
 export default function Connect({ isVerified }) {
+
 	const [click, setClick] = useState(false);
 	const [processing, setProcessing] = useState(true);
 
@@ -101,7 +101,9 @@ export default function Connect({ isVerified }) {
 					</div>
 				)
 			) : (
-				<div className="ps-3 text-green-500">Transaction Successful!</div>
+				<div className="ps-3 text-green-500">
+					Transaction Successful!
+				</div>
 			)}
 		</div>
 	);

@@ -4,6 +4,11 @@ import { useState } from "react";
 import verify from "../../scripts/tweetVerification.js";
 
 export default function Twitter({ isVerified }) {
+	const apiUrl = import.meta.env.VITE_API_URL;
+
+
+	console.log("twitter apiUrl", apiUrl)
+
 	const [isFollowing, setIsFollowing] = useState(false);
 	const [isPost, setIsPost] = useState(false);
 	const [url, setUrl] = useState("");
@@ -25,7 +30,7 @@ Get double rewards for the first month after launch if you're eligible
 		console.log("url", url);
 		if (isFollowing) {
 			try {
-				const result = await verify(url); // Assuming `verify` is an async function
+				const result = await verify(apiUrl, url); // Assuming `verify` is an async function
 				console.log("result", result);
 
 				if (result) {
