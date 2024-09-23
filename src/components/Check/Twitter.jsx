@@ -2,6 +2,7 @@ import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import verify from "../../scripts/tweetVerification.js";
+import axios from "axios";
 
 export default function Twitter({ isVerified }) {
 	const apiUrl =
