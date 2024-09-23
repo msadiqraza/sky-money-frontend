@@ -1,57 +1,92 @@
-import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import {
+	faCheck,
+	faCheckDouble,
+	faSpinner,
+	faTimes
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState } from "react";
+import { useAccount } from "@metamask/sdk-react-ui";
+import { useState } from "react";
 import verify from "../../scripts/tweetVerification.js";
-import axios from "axios";
+import findUser from "../../scripts/userFind.js";
 
 export default function Twitter({ isVerified }) {
 	const apiUrl =
 		import.meta.env.VITE_API_URL ||
 		"https://sky-money.onrender.com/";
 
-	console.log("twitter apiUrl", apiUrl);
-
 	const [isFollowing, setIsFollowing] = useState(false);
 	const [isPost, setIsPost] = useState(false);
 	const [url, setUrl] = useState("");
+
+	// is user found is for userFind, isProcessing starts with start of verify process,
+	const [userFound, setUserFound] = useState(0);
+	const [xVerify, setXVerify] = useState(0);
+	const [isProcessing, setIsProcessing] = useState(false);
 
 	const twitterUrl = "https://twitter.com/intent/tweet";
 	const text = `MakerDAO is now Sky! Get ready to upgrade to $USDS and $SKY on 18 Sept.
 Just signed up for the Early Bird Bonus on http://Sky.Money.
 Get double rewards for the first month after launch if you're eligible 
 @SkyEcosystem`;
-
 	const postHref = `${twitterUrl}?text=${encodeURIComponent(text)}`;
 
-	useEffect(() => {
-		const check = async () => {
-			try {
-				const response = await axios.get(
-					`${apiUrl}`
-				);
+	// useEffect(() => {
+	// 	const check = async () => {
+	// 		try {
+	// 			const response = await axios.get(
+	// 				`${apiUrl}`
+	// 			);
 
-				const result = response.data;
-				console.log(
-					"check verification alive",
-					result,
-					response
-				);
-			} catch (err) {
-				console.error(err);
-			}
-		};
+	// 			const result = response.data;
+	// 			console.log(
+	// 				"check verification alive",
+	// 				result,
+	// 				response
+	// 			);
+	// 		} catch (err) {
+	// 			console.error(err);
+	// 		}
+	// 	};
 
-		check();
-	}, [isFollowing]);
+	// 	check();
+	// }, [isFollowing]);
 
 	const handleSubmit = (e) => {
 		e.preventDefault(); // Prevents default form behavior
-		handleVerify(url); // Call verify function with the username
+
+		if (isFollowing) handleVerify(url);
+		// Call verify function with the username
+		else console.log("User is not following");
 	};
+
+	const extractUsername = (url) => {
+		// Use a regular expression to match the username in the URL
+		const regex = /https:\/\/x\.com\/([^/]+)\/status\/\d+/;
+		const match = url.match(regex);
+
+		// Check if a match was found and return the username
+		return match ? match[1] : null;
+	};
+
+	let abx = useAccount();
+	console.log("abx from twitter", abx.address);
 
 	const handleVerify = async (url) => {
 		console.log("url", url);
-		if (isFollowing) {
+		setIsProcessing(true);
+
+		let wallet = abx.address;
+		const username = extractUsername(url);
+
+		if (!wallet) {
+			wallet = "0x";
+		}
+
+		const result = await findUser(username, wallet);
+		setUserFound(result);
+
+		if (!result) {
 			try {
 				const result = await verify(
 					apiUrl,
@@ -61,6 +96,7 @@ Get double rewards for the first month after launch if you're eligible
 
 				if (result) {
 					setIsPost(true); // Update state if result is true
+					setXVerify(true);
 					isVerified(true); // Mark as verified
 				} else {
 					console.log(
@@ -74,7 +110,35 @@ Get double rewards for the first month after launch if you're eligible
 				);
 			}
 		} else {
-			console.log("User is not following");
+			console.log(
+				"User has already redeemed his reward"
+			);
+		}
+	};
+
+	const icon = (status) => {
+		switch (status) {
+			case 1:
+				return (
+					<FontAwesomeIcon
+						icon={faCheckDouble}
+						className={`text-2xl text-green-500 px-2`}
+					/>
+				);
+			case -1:
+				return (
+					<FontAwesomeIcon
+						icon={faTimes}
+						className={`text-2xl text-red-500 px-2`}
+					/>
+				);
+			default: // Case 0 or any other unrecognized status
+				return (
+					<FontAwesomeIcon
+						icon={faSpinner}
+						className={`animate-spin text-2xl px-2`}
+					/>
+				);
 		}
 	};
 
@@ -165,6 +229,32 @@ Get double rewards for the first month after launch if you're eligible
 					Verify
 				</button>
 			</div>
+
+			{isProcessing && (
+				<div>
+					<div className="pt-4 ps-3 flex items-center">
+						{icon(userFound)}
+						<label>
+							Confirming
+							you have
+							never
+							received a
+							reward
+							before
+						</label>
+					</div>
+
+					<div className="pt-2 ps-3 flex items-center">
+						{icon(xVerify)}
+
+						<label>
+							Verifying
+							twitter
+							post
+						</label>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

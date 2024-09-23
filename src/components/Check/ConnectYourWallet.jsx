@@ -1,15 +1,16 @@
 import { useAccount } from "@metamask/sdk-react-ui";
 import { useEffect, useRef, useState } from "react";
+import findUser from "../../scripts/userFind.js";
 import App from "../Metamask";
 
 export default function Connect({ isVerified }) {
-
 	const [click, setClick] = useState(false);
 	const [processing, setProcessing] = useState(true);
+	const [problem, setProblem] = useState(false);
 
 	const elementRef = useRef(null);
 	let abx = useAccount();
-	console.log("abx", abx.address);
+	// console.log("abx", abx.address);
 
 	const handleClickOutside = (event) => {
 		if (
@@ -23,6 +24,17 @@ export default function Connect({ isVerified }) {
 	const handleClick = async () => {
 		console.log("handleClick abx", abx.address);
 
+		const userFound = await findUser("", `${abx.address}`);
+		if (userFound) {
+			console.log("work", problem);
+			setProblem(true)
+			setTimeout(() => {
+				setProblem(false);
+			}, 3000);
+
+			return;
+		}
+
 		// const response = await handleSendEth(abx.address, 0.01);
 		setProcessing(false);
 		console.log("response", response);
@@ -31,6 +43,7 @@ export default function Connect({ isVerified }) {
 	// Set up event listener when component mounts
 	useEffect(() => {
 		document.addEventListener("mousedown", handleClickOutside);
+
 		return () => {
 			document.removeEventListener(
 				"mousedown",
@@ -103,6 +116,15 @@ export default function Connect({ isVerified }) {
 			) : (
 				<div className="ps-3 text-green-500">
 					Transaction Successful!
+				</div>
+			)}
+
+			{problem && (
+				<div className="absolute bottom-[0px] right-[10px] bg-red-800 max-w-50 rounded-md px-4 py-5 ">
+					<label>
+						You have already
+						redeemed your reward
+					</label>
 				</div>
 			)}
 		</div>
