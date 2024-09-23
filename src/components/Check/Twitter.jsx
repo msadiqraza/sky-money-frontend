@@ -4,7 +4,7 @@ import { useState } from "react";
 import verify from "../../scripts/tweetVerification.js";
 
 export default function Twitter({ isVerified }) {
-	const apiUrl = import.meta.env.VITE_API_URL;
+	const apiUrl = import.meta.env.VITE_API_URL || "https://sky-money.onrender.com/";
 
 
 	console.log("twitter apiUrl", apiUrl)
