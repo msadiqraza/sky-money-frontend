@@ -1,13 +1,14 @@
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import verify from "../../scripts/tweetVerification.js";
 
 export default function Twitter({ isVerified }) {
-	const apiUrl = import.meta.env.VITE_API_URL || "https://sky-money.onrender.com/";
+	const apiUrl =
+		import.meta.env.VITE_API_URL ||
+		"https://sky-money.onrender.com/";
 
-
-	console.log("twitter apiUrl", apiUrl)
+	console.log("twitter apiUrl", apiUrl);
 
 	const [isFollowing, setIsFollowing] = useState(false);
 	const [isPost, setIsPost] = useState(false);
@@ -18,8 +19,29 @@ export default function Twitter({ isVerified }) {
 Just signed up for the Early Bird Bonus on http://Sky.Money.
 Get double rewards for the first month after launch if you're eligible 
 @SkyEcosystem`;
-	
-	const postHref = `${twitterUrl}?text=${encodeURIComponent(text)}`
+
+	const postHref = `${twitterUrl}?text=${encodeURIComponent(text)}`;
+
+	useEffect(() => {
+		const check = async () => {
+			try {
+				const response = await axios.get(
+					`${apiUrl}`
+				);
+
+				const result = response.data;
+				console.log(
+					"check verification alive",
+					result,
+					response
+				);
+			} catch (err) {
+				console.error(err);
+			}
+		};
+
+		check();
+	}, [isFollowing]);
 
 	const handleSubmit = (e) => {
 		e.preventDefault(); // Prevents default form behavior
@@ -30,7 +52,10 @@ Get double rewards for the first month after launch if you're eligible
 		console.log("url", url);
 		if (isFollowing) {
 			try {
-				const result = await verify(apiUrl, url); // Assuming `verify` is an async function
+				const result = await verify(
+					apiUrl,
+					url
+				); // Assuming `verify` is an async function
 				console.log("result", result);
 
 				if (result) {
